@@ -9,6 +9,7 @@
 #include <GLES3/gles3w.h>
 
 static char vs[] =
+"#version 300 es\n"
 "// Advect.VS\n"
 "\n"
 "in vec3 Position;\n"
@@ -23,11 +24,11 @@ static char vs[] =
 "uniform vec3 Size;\n"
 "uniform vec3 Extent;\n"
 "uniform float Time;\n"
-"uniform float TimeStep = 5.0;\n"
-"uniform float InitialBand = 0.1;\n"
-"uniform float SeedRadius = 0.25;\n"
-"uniform float PlumeCeiling = 3.0;\n"
-"uniform float PlumeBase = -3;\n"
+"uniform float TimeStep; // = 5.0;\n"
+"uniform float InitialBand; // = 0.1;\n"
+"uniform float SeedRadius; // = 0.25;\n"
+"uniform float PlumeCeiling; // = 3.0;\n"
+"uniform float PlumeBase; // = -3;\n"
 "\n"
 "const float TwoPi = 6.28318530718;\n"
 "const float UINT_MAX = 4294967295.0;\n"
@@ -43,15 +44,15 @@ static char vs[] =
 "\n"
 "float randhashf(uint seed, float b)\n"
 "{\n"
-"    return float(b * randhash(seed)) / UINT_MAX;\n"
+"    return float(b * float(randhash(seed))) / UINT_MAX;\n"
 "}\n"
 "\n"
 "vec3 SampleVelocity(vec3 p)\n"
 "{\n"
 "    vec3 tc;\n"
-"    tc.x = (p.x + Extent.x) / (2 * Extent.x);\n"
-"    tc.y = (p.y + Extent.y) / (2 * Extent.y);\n"
-"    tc.z = (p.z + Extent.z) / (2 * Extent.z);\n"
+"    tc.x = (p.x + Extent.x) / (2.0 * Extent.x);\n"
+"    tc.y = (p.y + Extent.y) / (2.0 * Extent.y);\n"
+"    tc.z = (p.z + Extent.z) / (2.0 * Extent.z);\n"
 "    return texture(Sampler, tc).xyz;\n"
 "}\n"
 "\n"
@@ -81,9 +82,9 @@ static char vs[] =
 
 static char fs[] =
 "#version 300 es\n"
-"// Dummy\n"
+"// Dummy.fs\n"
 "\n"
-"out vec4 FragColor;\n"
+"out mediump vec4 FragColor;\n"
 "\n"
 "void main()\n"
 "{\n"
@@ -150,7 +151,6 @@ resizeCB(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-#if 0
 static GLuint loadProgram(const char* pVS, const char* pFS,
                           int aCount, const char* attribs[],
                           int vCount, const char* varyings[])
@@ -177,7 +177,7 @@ static GLuint loadProgram(const char* pVS, const char* pFS,
     glAttachShader(programHandle, fsHandle);
 
     for (int a = 0; a < aCount; a++)
-        glBindAttribLocation(programHandle, 0, attribs[a]);
+        glBindAttribLocation(programHandle, a, attribs[a]);
 
     if (vCount) {
         glTransformFeedbackVaryings(programHandle, vCount, varyings, GL_INTERLEAVED_ATTRIBS);
@@ -205,7 +205,6 @@ static GLuint loadProgram(const char* pVS, const char* pFS,
     glUseProgram(programHandle);
     return programHandle;
 }
-#endif
 
 int
 main(int argc, char* argv[]) {
@@ -234,12 +233,14 @@ main(int argc, char* argv[]) {
 
     glfwMakeContextCurrent(window);
 
+	gles3wInit();
+
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
     glViewport(0, 0, width, height);
     glClearColor(1, 0, 0, 1);
 
-//    GLuint program = loadProgram(vs, fs, 5, attribs, 3, varyings);
+    GLuint program = loadProgram(vs, fs, 5, attribs, 3, varyings);
 
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT);
