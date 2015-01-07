@@ -6,7 +6,7 @@
 #include <GLFW/glfw3.h>
 
 #define GLES3W_IMPLEMENTATION glfwGetProcAddress
-#include <GLES/gles3w.h>
+#include <GLES3/gles3w.h>
 
 static char vs[] =
 "// Advect.VS\n"
@@ -93,17 +93,24 @@ static char fs[] =
 static const char* attribs[] = { "Position", "TexCoord", "Normal", "BirthTime", "Velocity" };
 static const char* varyings[] = { "vPosition", "vBirthTime", "vVelocity" };
 
+#ifdef _MSC_VER
 extern "C" {
 __declspec(dllimport) void __stdcall
 OutputDebugStringA(_In_opt_ const char* lpOutputString);
 }
+#endif
 
 static void _fatalError(const char* pStr, va_list a) {
     char msg[1024] = {0};
+#ifdef _MSC_VER
     _vsnprintf_s(msg, _countof(msg), _TRUNCATE, pStr, a);
     OutputDebugStringA(msg);
     OutputDebugStringA("\n");
     __debugbreak();
+#else
+    vsnprintf(msg, 1024, pStr, a);
+    fputs(msg, stderr);
+#endif
     exit(1);
 }
 
@@ -207,8 +214,7 @@ main(int argc, char* argv[]) {
     printf("donk.\n");
 
     if (!glfwInit()) {
-        result = EXIT_FAILURE;
-        goto exit;
+        exit(EXIT_FAILURE);
     }
 
     glfwSetErrorCallback(errorCB);
