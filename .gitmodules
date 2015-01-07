@@ -1,0 +1,7 @@
+[submodule "src/thirdparty/gl3w"]
+	path = src/thirdparty/gl3w
+	url = https://github.com/djg/gl3w
+	branch = gles3w
+[submodule "src/thirdparty/glfw"]
+	path = src/thirdparty/glfw
+	url = https://github.com/glfw/glfw
